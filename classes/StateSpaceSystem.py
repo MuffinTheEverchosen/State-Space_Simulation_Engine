@@ -27,4 +27,4 @@ class StateSpaceSystem:
 
     def update(self, new_state: Vector, time_change: float):
         self.current_time += time_change
-        self.current_state += new_state
+        self.current_state = new_state
