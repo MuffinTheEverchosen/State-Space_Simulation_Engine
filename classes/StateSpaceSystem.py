@@ -5,13 +5,13 @@ from Utilities.utils import check_matrix_dimensions
 
 
 class StateSpaceSystem:
-    def __init__(self, state_matrix: Matrix, input_matrix: Matrix, output_matrix: Matrix, initial_state: Vector, feedthrough_matrix: Matrix = None, initial_time: float = 0):
+    def __init__(self, state_matrix: Matrix, input_matrix: Matrix, output_matrix: Matrix, initial_state: Vector, feedthrough_matrix: Matrix = None):
         check_matrix_dimensions(state_matrix, 2)
         check_matrix_dimensions(input_matrix, 2)
         check_matrix_dimensions(output_matrix, 2)
         check_matrix_dimensions(initial_state, 2)
 
-        if not feedthrough_matrix:
+        if feedthrough_matrix == None:
             feedthrough_matrix = np.zeros((output_matrix.shape[0], input_matrix.shape[1]))
 
         check_matrix_dimensions(feedthrough_matrix, 2)
@@ -31,16 +31,14 @@ class StateSpaceSystem:
         self.feedthrough_matrix = feedthrough_matrix
 
         self.current_state = initial_state
-        self.current_time = initial_time
 
-    def get_state_change(self, control_input: Vector, current_state: Vector):
+    def get_state_change(self, control_input: Vector, current_state: Vector) -> Matrix:
         return self.state_matrix @ current_state + self.input_matrix @ control_input
 
-    def get_output(self, control_input: Vector):
+    def get_output(self, control_input: Vector) -> Matrix:
         return self.output_matrix @ self.current_state + self.feedthrough_matrix @ control_input
 
-    def update(self, new_state: Vector, time_change: float):
-        self.current_time += time_change
+    def update(self, new_state: Vector):
         self.current_state = new_state
 
     def check_input_size(self, control_input: Vector):
