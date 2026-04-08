@@ -3,14 +3,29 @@ from matplotlib import pyplot as plt
 
 from Utilities.types import Vector, Matrix
 from Utilities.utils import rk4
+from classes.Dataclasses import SimulationData, SystemHistory
 from classes.StateSpaceSystem import StateSpaceSystem
 
-
 class SystemSimulation:
-    def __init__(self, current_time: float = 0):
-        self.current_time = current_time
+    def __init__(self, systems: list[StateSpaceSystem] = None, initial_time: float = 0):
+        self.current_time = initial_time
+        self.history = SimulationData()
+        self.__index_count = 0
+        self.systems = {}
+        if systems is not None:
+            for system in systems:
+                self.add_system(system)
 
-        self.history = {"time": [], "state": [], "output": []}
+    def add_system(self, system: StateSpaceSystem) -> None:
+        current_id = self.__index_count
+        self.__index_count += 1
+
+        self.history.indexes[system] = current_id
+        self.systems[current_id] = system
+
+        self.history.systems[current_id] = SystemHistory()
+        self.history.systems[current_id].state.append(system.current_state.copy())
+        self.history.systems[current_id].output.append(system.current_state.copy())
 
     # Runtime
 
