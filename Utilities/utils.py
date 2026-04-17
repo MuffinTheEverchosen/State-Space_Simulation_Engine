@@ -5,7 +5,7 @@ import numpy.typing as npt
 from Utilities.types import Vector
 
 
-def rk4(state_change: Callable, current_state: Vector, control_input: Vector, step_size: float):
+def rk4(state_change: Callable, current_state: Vector, control_input: Vector, step_size: float) -> Vector:
     k1 = state_change(control_input, current_state)
     k2 = state_change(control_input, current_state + k1 * (step_size / 2))
     k3 = state_change(control_input, current_state + k2 * (step_size / 2))
@@ -15,6 +15,6 @@ def rk4(state_change: Callable, current_state: Vector, control_input: Vector, st
 
     return current_state + weighted_slope * step_size
 
-def check_matrix_dimensions(matrix: np.ndarray, desired_amount):
+def check_matrix_dimensions(matrix: np.ndarray, desired_amount) -> None:
     if matrix.ndim != desired_amount:
         raise ValueError("Wrong matrix dimensions")

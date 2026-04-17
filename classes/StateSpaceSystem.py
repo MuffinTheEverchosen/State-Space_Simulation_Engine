@@ -31,7 +31,6 @@ class StateSpaceSystem:
         self.feedthrough_matrix = feedthrough_matrix
 
         self.current_state = initial_state
-        self.current_time = initial_time
 
     def get_state_change(self, control_input: Vector, current_state: Vector):
         return self.state_matrix @ current_state + self.input_matrix @ control_input
@@ -39,8 +38,7 @@ class StateSpaceSystem:
     def get_output(self, control_input: Vector):
         return self.output_matrix @ self.current_state + self.feedthrough_matrix @ control_input
 
-    def update(self, new_state: Vector, time_change: float):
-        self.current_time += time_change
+    def update(self, new_state: Vector):
         self.current_state = new_state
 
     def check_input_size(self, control_input: Vector):

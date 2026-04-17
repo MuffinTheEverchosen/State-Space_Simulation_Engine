@@ -16,12 +16,7 @@ initial_state = np.array(
     [[0.2],
      [0.0]])
 u = np.array([[0.0]])
+step_size = 0.1
 
-Environment = SystemSimulation()
 System = StateSpaceSystem(state_matrix, input_matrix, output_matrix, initial_state)
-
-Environment.run(System, u, 2)
-
-print(Environment)
-
-Environment.plot_system()
+Environment = SystemSimulation(step_size, System)
