@@ -5,8 +5,8 @@ from matplotlib import pyplot as plt
 
 from Utilities.types import Vector, Matrix
 from Utilities.utils import rk4
+from classes.Dataclasses import SimulationData, SystemHistory
 from classes.StateSpaceSystem import StateSpaceSystem
-
 
 class SystemSimulation:
     def __init__(self, step_size, simulated_system: StateSpaceSystem, current_time: float = 0):
