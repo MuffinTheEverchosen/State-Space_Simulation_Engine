@@ -1,3 +1,5 @@
+from typing import Callable
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -7,47 +9,50 @@ from classes.Dataclasses import SimulationData, SystemHistory
 from classes.StateSpaceSystem import StateSpaceSystem
 
 class SystemSimulation:
-    def __init__(self, systems: list[StateSpaceSystem] = None, initial_time: float = 0):
-        self.current_time = initial_time
-        self.history = SimulationData()
-        self.__index_count = 0
-        self.systems = {}
-        if systems is not None:
-            for system in systems:
-                self.add_system(system)
-
-    def add_system(self, system: StateSpaceSystem) -> None:
-        current_id = self.__index_count
-        self.__index_count += 1
-
-        self.history.indexes[system] = current_id
-        self.systems[current_id] = system
-
-        self.history.systems[current_id] = SystemHistory()
-        self.history.systems[current_id].state.append(system.current_state.copy())
-        self.history.systems[current_id].output.append(system.current_state.copy())
+    def __init__(self, step_size, simulated_system: StateSpaceSystem, current_time: float = 0):
+        self.current_time = current_time
+        self.step_size = step_size
+        self.system = simulated_system
+        self.history = {"time": [], "state": [], "output": []}
 
     # Runtime
 
-    def step(self, system: StateSpaceSystem, control_input: Vector, step_size):
-        system.check_input_size(control_input)
-        output = system.get_output(control_input)
-        rk4_step = rk4(system.get_state_change, system.current_state, control_input, step_size)
+    def step(self, control_input: Vector):
+        self.system.check_input_size(control_input)
+        output = self.system.get_output(control_input)
+        rk4_step = rk4(self.system.get_state_change, self.system.current_state, control_input, self.step_size)
 
         self.history["time"].append(self.current_time)
-        self.history["state"].append(system.current_state.copy())
+        self.history["state"].append(self.system.current_state.copy())
         self.history["output"].append(output.copy())
 
-        system.update(rk4_step, step_size)
+        self.system.update(rk4_step)
 
-        self.current_time += step_size
+        self.current_time += self.step_size
 
-    def run(self, system: StateSpaceSystem, control_input: Matrix, simulation_time: float, step_size: float = None):
-        if not step_size:
-            step_size = simulation_time / 1000
-
+    def run(self, control_input: Matrix, simulation_time: float):
         while self.current_time < simulation_time:
-            self.step(system, control_input, step_size)
+            self.step(control_input)
+
+    def rewind(self, number_of_steps_back: int):
+        state_to_rewind = self.history["state"][len(self.history["time"]) - number_of_steps_back - 1]
+        self.system.current_state = state_to_rewind
+        self.current_time -= number_of_steps_back * self.step_size
+
+        for steps in range(number_of_steps_back):
+            self.history["time"].pop()
+            self.history["state"].pop()
+            self.history["output"].pop()
+
+    def reset(self):
+        self.system.current_state = self.history["state"][0]
+        self.current_time = self.history["time"][0]
+
+        self.history["time"] = []
+        self.history["state"] = []
+        self.history["output"] = []
+
+    # getters
 
     def get_state(self, time):
         for t, s, o in zip(self.history["time"], self.history["state"]):
@@ -68,23 +73,3 @@ class SystemSimulation:
             lines.append(f"Time: {t:.2f}s | State: {s.flatten()} | Output: {o.flatten()}")
 
         return "\n".join(lines)
-
-    # Testing
-
-    def plot_system(self):
-        # Reshape wymusza układ: wiersze = kroki czasowe, kolumny = konkretne wyjścia
-        outputs = np.array(self.history["output"]).reshape(len(self.history["time"]), -1)
-
-        plt.figure(figsize=(10, 5))
-
-        # Rysuje osobną linię dla każdej kolumny z outputs
-        for i in range(outputs.shape[1]):
-            plt.plot(self.history["time"], outputs[:, i], label=f'Wyjście {i + 1}')
-
-        plt.axhline(0, color='black', lw=0.5, ls='--')
-        plt.xlabel('Czas [s]')
-        plt.ylabel('Amplituda')
-        plt.title('Odpowiedź układu dynamicznego')
-        plt.grid(True, alpha=0.3)
-        plt.legend()
-        plt.show()
