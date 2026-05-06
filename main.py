@@ -1,27 +1,21 @@
 import numpy as np
 
+from classes.Signals import SquareSignal
 from classes.StateSpaceSystem import StateSpaceSystem
 from classes.SystemSimulation import SystemSimulation
-
-state_matrix = np.array([
-    [0, 1],
-    [-10, 0]])
-input_matrix = np.array([
-    [0],
-    [1]])
-output_matrix = np.array(
-    [[1, 0],
-     [0, 1]])
-initial_state = np.array(
-    [[0.2],
-     [0.0]])
-u = np.array([[0.0]])
 step_size = 0.01
 
-System = StateSpaceSystem(state_matrix, input_matrix, output_matrix, initial_state)
-Environment = SystemSimulation(step_size, System, 0, True, False, 0.0001)
 
-Environment.run(u, 10)
 
-print(Environment)
-Environment.plot_results()
+# Testing
+
+Feedthrough_System = StateSpaceSystem([[0, 0],[0, 0]], [[0],[0]], [[0, 0],[0, 0]], [[0.0], [0.0]], [[1.0], [0.0]])
+Perfect_Oscillator_System = StateSpaceSystem([[0, 1], [-10, 0]], [[0],[1]], [[1, 0],[0, 1]], [[0.2],[0.0]])
+Square_Signal = SquareSignal(10, 50)
+
+Feedthrough_Env = SystemSimulation(step_size, Feedthrough_System)
+Feedthrough_Env.run([[Square_Signal]], 200)
+
+Feedthrough_Env.plot_results()
+
+print(Feedthrough_Env)

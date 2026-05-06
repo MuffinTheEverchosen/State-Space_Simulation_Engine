@@ -10,7 +10,7 @@ from classes.StateSpaceSystem import StateSpaceSystem
 
 
 class SystemSimulation:
-    def __init__(self, step_size, simulated_system: StateSpaceSystem, current_time: float = 0, rk4_method: bool = True, euler_method: bool = False, tolerance: float = 0):
+    def __init__(self, step_size, simulated_system: StateSpaceSystem, rk4_method: bool = True, euler_method: bool = False, tolerance: float = 1e-5, current_time: float = 0):
         self.current_time = current_time
         self.step_size = step_size
         self.system = simulated_system
@@ -29,7 +29,11 @@ class SystemSimulation:
             raise ValueError("No method chosen")
 
     def step(self, control_input: Vector):
+        control_input = np.array(control_input)
         self.system.check_input_size(control_input)
+        for row in range(len(control_input)):
+            control_input[row][0] = self.input_validator(control_input[row][0])
+
         output = self.system.get_output(control_input)
 
         value_confirmed = False
@@ -46,7 +50,7 @@ class SystemSimulation:
                 value_confirmed = True
                 current_step = half_2
 
-                if error < self.tolerance / 10:
+                if error < self.tolerance / 10 and error:
                     self.step_size *= 1.2
             else:
                 self.step_size /= 2
@@ -95,11 +99,20 @@ class SystemSimulation:
                 return o
         raise ValueError("Wrong time")
 
+    def input_validator(self, control_input):
+        if callable(control_input):
+            control_input = control_input(self.current_time)
+
+        return control_input
+
     def __str__(self):
         lines = []
-
+        i = 0
         for t, s, o in zip(self.history["time"], self.history["state"], self.history["output"]):
-            lines.append(f"Time: {t:.2f}s | State: {s.flatten()} | Output: {o.flatten()}")
+            if i == 0:
+                lines.append(f"Time: {t:.2f}s | State: {s.flatten()} | Output: {o.flatten()}")
+            i += 1
+            i = i % 100
 
         return "\n".join(lines)
 
