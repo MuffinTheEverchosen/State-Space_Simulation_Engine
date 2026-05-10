@@ -6,6 +6,11 @@ from Utilities.utils import check_matrix_dimensions
 
 class StateSpaceSystem:
     def __init__(self, state_matrix: Matrix, input_matrix: Matrix, output_matrix: Matrix, initial_state: Vector, feedthrough_matrix: Matrix = None):
+        state_matrix = np.array(state_matrix, dtype=float)
+        input_matrix = np.array(input_matrix, dtype=float)
+        output_matrix = np.array(output_matrix, dtype=float)
+        initial_state = np.array(initial_state, dtype=float)
+
         check_matrix_dimensions(state_matrix, 2)
         check_matrix_dimensions(input_matrix, 2)
         check_matrix_dimensions(output_matrix, 2)
@@ -13,6 +18,8 @@ class StateSpaceSystem:
 
         if feedthrough_matrix == None:
             feedthrough_matrix = np.zeros((output_matrix.shape[0], input_matrix.shape[1]))
+        else:
+            feedthrough_matrix = np.array(feedthrough_matrix, dtype=float)
 
         check_matrix_dimensions(feedthrough_matrix, 2)
 
@@ -42,5 +49,5 @@ class StateSpaceSystem:
         self.current_state = new_state
 
     def check_input_size(self, control_input: Vector):
-        if self.input_matrix.shape[1] != control_input.shape[1]:
+        if self.input_matrix.shape[1] != control_input.shape[0]:
             raise ValueError("Wrong height of control_input")
