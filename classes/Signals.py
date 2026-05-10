@@ -9,13 +9,13 @@ class Signal(ABC):
     def __call__(self, t: float) -> float:
         pass
 
-class SquareSignal(Signal):
-    def __init__(self, amplitude: float, frequency: float, duty_cycle: float = 0.5):
+class RectangleSignal(Signal):
+    def __init__(self, amplitude: float, period: float, duty_cycle: float = 0.5):
         if duty_cycle < 0 or duty_cycle > 1:
             raise ValueError("Duty cycle higher than 1 or lower than 0")
 
         super().__init__(amplitude)
-        self.period = 1 / frequency
+        self.period = period
         self.duty_cycle = duty_cycle
 
     def __call__(self, t: float):
@@ -26,12 +26,26 @@ class SquareSignal(Signal):
             return -self.amplitude
 
 class SineSignal(Signal):
-    def __init__(self, amplitude: float, frequency: float, phase: float = 0.0):
+    def __init__(self, amplitude: float, period: float, phase: float = 0.0):
         super().__init__(amplitude)
-        self.frequency = frequency
+        self.frequency = 1 / period
         self.phase = phase
 
     def __call__(self, t: float):
-        return self.amplitude * np.sin(2 * np.pi * self.frequency * t + self.phase)
+        return float(self.amplitude * np.sin(2 * np.pi * self.frequency * t + self.phase))
 
-#class TriangleSignal(Signal):
+class TriangleSignal(Signal):
+    def __init__(self, amplitude: float, period: float, phase: float = 0.0):
+        super().__init__(amplitude)
+        self.frequency = 1 / period
+        self.phase = phase
+
+    def __call__(self, t: float):
+        return (self.amplitude * 2 / np.pi) * np.arcsin(np.sin(2 * np.pi * self.frequency * t + self.phase))
+
+class HeavisideStep(Signal):
+    def __init__(self, amplitude: float):
+        super().__init__(amplitude)
+
+    def __call__(self, t: float):
+        return self.amplitude

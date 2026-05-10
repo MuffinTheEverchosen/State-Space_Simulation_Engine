@@ -1,21 +1,26 @@
-import numpy as np
-
-from classes.Signals import SquareSignal
+from classes.Signals import RectangleSignal, SineSignal, TriangleSignal
 from classes.StateSpaceSystem import StateSpaceSystem
 from classes.SystemSimulation import SystemSimulation
-step_size = 0.01
+
+step_size = None #fill that
+J1 = None #fill that
+J2 = None #fill that
+n1 = None #fill that
+n2 = None #fill that
+k = None #fill that
+b = None #fill that
+Jeq = J2 + J1 * pow(n2/n1, 2)
+tolerance = None # fill that
+
+state_matrix = [[0, 1],[-k/Jeq, -b/Jeq]]
+input_matrix = [[0], [n2/(n1*Jeq)]]
+output_matrix = [[1, 0], [0, 1]]
+
+inital_state = [[None], [None]]
 
 
 
-# Testing
+system = StateSpaceSystem(state_matrix, input_matrix, output_matrix, inital_state)
+simulation = SystemSimulation(step_size, system)
 
-Feedthrough_System = StateSpaceSystem([[0, 0],[0, 0]], [[0],[0]], [[0, 0],[0, 0]], [[0.0], [0.0]], [[1.0], [0.0]])
-Perfect_Oscillator_System = StateSpaceSystem([[0, 1], [-10, 0]], [[0],[1]], [[1, 0],[0, 1]], [[0.2],[0.0]])
-Square_Signal = SquareSignal(10, 50)
 
-Feedthrough_Env = SystemSimulation(step_size, Feedthrough_System)
-Feedthrough_Env.run([[Square_Signal]], 200)
-
-Feedthrough_Env.plot_results()
-
-print(Feedthrough_Env)

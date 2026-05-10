@@ -49,5 +49,5 @@ class StateSpaceSystem:
         self.current_state = new_state
 
     def check_input_size(self, control_input: Vector):
-        if self.input_matrix.shape[1] != control_input.shape[1]:
+        if self.input_matrix.shape[1] != control_input.shape[0]:
             raise ValueError("Wrong height of control_input")

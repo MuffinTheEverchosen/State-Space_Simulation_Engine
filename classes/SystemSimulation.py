@@ -6,6 +6,7 @@ from numpy.f2py.auxfuncs import throw_error
 
 from Utilities.types import Vector, Matrix
 from Utilities.utils import rk4, euler
+from classes.Signals import Signal
 from classes.StateSpaceSystem import StateSpaceSystem
 
 
@@ -28,30 +29,39 @@ class SystemSimulation:
         else:
             raise ValueError("No method chosen")
 
-    def step(self, control_input: Vector):
+    def step(self, control_input: Signal):
+
+
         control_input = np.array(control_input)
         self.system.check_input_size(control_input)
+        control_input_final = control_input.copy()
         for row in range(len(control_input)):
-            control_input[row][0] = self.input_validator(control_input[row][0])
+            control_input_final[row][0] = self.input_validator(control_input[row][0])
 
-        output = self.system.get_output(control_input)
+        output = self.system.get_output(control_input_final)
+
+        self.history["time"].append(self.current_time)
+        self.history["state"].append(self.system.current_state.copy())
+        self.history["output"].append(output.copy())
 
         value_confirmed = False
         current_step = 0
         while not value_confirmed:
-            full_step = self._calc_step(self.system.current_state, control_input, self.step_size)
+            full_step = self._calc_step(self.system.current_state, control_input_final, self.step_size)
+            half_input = np.array([[row[0](self.current_time + self.step_size / 2)] for row in control_input])
 
-            half_1 = self._calc_step(self.system.current_state, control_input, self.step_size / 2)
-            half_2 = self._calc_step(half_1, control_input, self.step_size / 2)
+            half_1 = self._calc_step(self.system.current_state, control_input_final, self.step_size / 2)
+            half_2 = self._calc_step(half_1, half_input, self.step_size / 2)
 
             error = np.max(np.abs(full_step - half_2))
 
             if error <= self.tolerance:
                 value_confirmed = True
                 current_step = half_2
+                self.current_time += self.step_size
 
                 if error < self.tolerance / 10 and error:
-                    self.step_size *= 1.2
+                    self.step_size = min(self.step_size * 1.2, 0.02)
             else:
                 self.step_size /= 2
 
@@ -61,11 +71,10 @@ class SystemSimulation:
 
         self.system.update(current_step)
 
-        self.current_time += self.step_size
-
     def run(self, control_input: Matrix, simulation_time: float):
         while self.current_time < simulation_time:
             self.step(control_input)
+        self.step(control_input)
 
     def rewind(self, number_of_steps_back: int):
         state_to_rewind = self.history["state"][len(self.history["time"]) - number_of_steps_back - 1]
@@ -112,7 +121,7 @@ class SystemSimulation:
             if i == 0:
                 lines.append(f"Time: {t:.2f}s | State: {s.flatten()} | Output: {o.flatten()}")
             i += 1
-            i = i % 100
+            i = i % 50
 
         return "\n".join(lines)
 

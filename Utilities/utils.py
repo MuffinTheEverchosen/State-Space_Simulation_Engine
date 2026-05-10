@@ -3,9 +3,10 @@ from typing import Callable
 import numpy as np
 import numpy.typing as npt
 from Utilities.types import Vector
+from classes.Signals import Signal
 
 
-def rk4(state_change: Callable, current_state: Vector, control_input: Vector, step_size: float) -> Vector:
+def rk4(state_change: Callable, current_state: Vector, control_input: Signal, step_size: float) -> Vector:
     k1 = state_change(control_input, current_state)
     k2 = state_change(control_input, current_state + k1 * (step_size / 2))
     k3 = state_change(control_input, current_state + k2 * (step_size / 2))
