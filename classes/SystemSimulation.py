@@ -125,30 +125,26 @@ class SystemSimulation:
 
         return "\n".join(lines)
 
-    def plot_results(self):
-        """Rysuje wykres wyjścia (output) w czasie."""
+
+    def plot_and_save(self, save_path):
         if not self.history["time"]:
-            print("Brak danych do narysowania. Uruchom najpierw symulację.")
             return
-
+        
         plt.figure(figsize=(10, 5))
-
-        # Zamieniamy listę wektorów w jedną macierz i usuwamy puste wymiary
         y = np.array(self.history["output"]).squeeze()
         time_axis = self.history["time"]
-
-        # Jeśli układ ma wiele wyjść (macierz C ma więcej niż jeden wiersz),
-        # y będzie dwuwymiarowe. Rysujemy wtedy każde wyjście osobną linią.
+        
         if y.ndim > 1:
             for i in range(y.shape[1]):
                 plt.plot(time_axis, y[:, i], label=f'Wyjście {i}')
         else:
-            # Dla pojedynczego wyjścia
             plt.plot(time_axis, y, label='Wyjście')
-
+        
         plt.title("Symulacja układu")
         plt.xlabel("Czas [s]")
         plt.ylabel("Amplituda")
         plt.grid(True)
         plt.legend()
-        plt.show()
+        
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        plt.close() 
